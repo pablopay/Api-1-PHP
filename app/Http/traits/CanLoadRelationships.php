@@ -15,9 +15,9 @@ trait canLoadRelationships
         Model|QueryBuilder|EloquentBuilder $for,
         ?array $relations = null
     ): Model|QueryBuilder|EloquentBuilder{
-
-     foreach($relations as $relation) {
         $relations = $relations ?? $this->relations ?? [];
+
+        foreach ($relations as $relation) {
 
             $for->when(
                 $this->shouldIncludeRelation($relation),

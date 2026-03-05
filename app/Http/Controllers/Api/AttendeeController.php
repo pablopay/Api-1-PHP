@@ -11,6 +11,7 @@ use Illuminate\Http\Request;
 
 
 
+
 class AttendeeController extends Controller
 
 {
@@ -18,6 +19,14 @@ class AttendeeController extends Controller
     private array $relations = ['users'];
 
     use canLoadRelationships;
+
+    public function __construct()
+    {
+        $this->middleware('auth:sanctum')->except(['index', 'show']);
+        $this->middleware('throttle:api')
+            ->only(['store','destroy']);
+        $this->authorizeResource(Attendee::class,'attendee');
+    }
     /**
      * Display a listing of the resource.
      */
@@ -36,9 +45,11 @@ class AttendeeController extends Controller
      */
     public function store(Request $request, Event $event)
     {
-        $attendee = $event->attendees()->create([
-            'user_id' => 1
-        ]);
+        $attendee = $this->loadRelationships(
+           $event->attendees()->create([
+            'user_id' => $request->user()->id
+        ])
+        );
 
         return new AttendeeResource($attendee);
     }
@@ -62,9 +73,9 @@ class AttendeeController extends Controller
     /**
      * Remove the specified resource from storage.
      */
-    public function destroy(string $event, Attendee $atendee)
+    public function destroy(Event $event, Attendee $attendee)
     {
-        $atendee->delete();
+        $attendee->delete();
 
         return response(status: 204);
     }
